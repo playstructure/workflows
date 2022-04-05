@@ -1,0 +1,55 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      cluster_resource_group:
+        type: string
+        required: true
+      cluster_name:
+        type: string
+        required: true
+      image_name:
+        type: string
+        required: true
+      image_tag:
+        type: string
+        required: true
+      deploy_environment:
+        type: string
+        required: true   
+    secrets:
+      azure_client_id:
+        required: true
+      azure_tenant_id:
+        required: true
+      azure_subscription_id:
+        required: true
+      azure_registry:
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        
+    - name: Get AKS Credentials
+      run: az aks get-credentials --admin --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID } --resource-group ${{ inputs.CLUSTER_RESOURCE_GROUP } --name ${{ inputs.CLUSTER_NAME }
+
+    - name: Set image to ${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+      run: kustomize edit set image ${{ inputs.IMAGE_NAME }}=${{ secrets.AZURE_REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+      working-directory: .playstructure/kubernetes/${{ inputs.DEPLOY_ENVIRONMENT }
+      
+    - name: Deploy
+      run: kustomize build | kubectl apply -f -
+      working-directory: .playstructure/kubernetes/${{ inputs.DEPLOY_ENVIRONMENT }
