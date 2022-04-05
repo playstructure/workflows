@@ -2,6 +2,10 @@ name: Build and Publish Docker Image
 
 on:
   workflow_call:
+    inputs:
+      checkout_main:
+        type: boolean
+        required: false
     secrets:
       azure_client_id:
         required: true
@@ -20,6 +24,8 @@ jobs:
       id-token: write
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.checkout_main && "main" || null }}
 
     - name: Azure Login
       uses: azure/login@v1
