@@ -23,8 +23,9 @@ on:
         required: true
 jobs:
   deploy:
-    name: Deploy ${{ github.event.workflow_run.head_sha }}
+    name: ${{ github.event.workflow_run.head_sha }} # Shows up as Deploy / <sha>
     environment: ${{ inputs.DEPLOY_ENVIRONMENT }}
+    concurrency: ${{ inputs.DEPLOY_ENVIRONMENT }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
