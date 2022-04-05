@@ -29,6 +29,7 @@ on:
         required: true
 jobs:
   deploy:
+    environment: ${{ inputs.DEPLOY_ENVIRONMENT }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
