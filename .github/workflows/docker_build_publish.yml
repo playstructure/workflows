@@ -19,7 +19,7 @@ on:
         required: true
 jobs:
   build:
-    name: ${{ github.checkout_ref || github.sha }} # Shows up as Build / <sha> 
+    name: ${{ inputs.checkout_ref || github.sha }} # Shows up as Build / <sha> 
     runs-on: ubuntu-latest
     permissions:
       contents: read
