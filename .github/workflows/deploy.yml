@@ -14,7 +14,7 @@ on:
         required: true   
       sha:
         type: string
-        required: true
+        required: false
     secrets:
       azure_client_id:
         required: true
@@ -26,7 +26,7 @@ on:
         required: true
 jobs:
   deploy:
-    name: ${{ inputs.sha }} # Shows up as Deploy / <sha>
+    name: ${{ inputs.sha || github.sha }} # Shows up as Deploy / <sha>
     environment: ${{ inputs.DEPLOY_ENVIRONMENT }}
     concurrency: ${{ github.workflow }}-deploy-${{ inputs.DEPLOY_ENVIRONMENT }}
     runs-on: ubuntu-latest
@@ -48,8 +48,8 @@ jobs:
     - name: Get AKS Credentials
       run: az aks get-credentials --admin --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --resource-group ${{ inputs.CLUSTER_RESOURCE_GROUP }} --name ${{ inputs.CLUSTER_NAME }}
 
-    - name: Set image to ${{ github.event.repository.name }}:${{ inputs.sha }}
-      run: kustomize edit set image ${{ github.event.repository.name }}=${{ secrets.AZURE_REGISTRY }}/${{ github.event.repository.name }}:${{ inputs.sha }}
+    - name: Set image to ${{ github.event.repository.name }}:${{ inputs.sha || github.sha }}
+      run: kustomize edit set image ${{ github.event.repository.name }}=${{ secrets.AZURE_REGISTRY }}/${{ github.event.repository.name }}:${{ inputs.sha || github.sha }}
       working-directory: .playstructure/kubernetes/${{ inputs.DEPLOY_ENVIRONMENT }}
       
     - name: Deploy
