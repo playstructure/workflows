@@ -3,6 +3,8 @@ name: Build and Publish Docker Image
 on:
   workflow_call:
     inputs:
+      # Override the SHA to build to not match the ref that initiated the workflow,
+      # e.g. during stack initialization when previous jobs have git push'ed.
       checkout_ref:
         type: string
         required: false
@@ -17,7 +19,7 @@ on:
         required: true
 jobs:
   build:
-    name: ${{ github.sha }} # Shows up as Build / <sha> 
+    name: ${{ github.checkout_ref || github.sha }} # Shows up as Build / <sha> 
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,7 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ inputs.checkout_ref }}
+        ref: ${{ inputs.checkout_ref }} # Uses github.sha if null
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
